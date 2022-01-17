@@ -1,35 +1,44 @@
-pipeline {
-  agent any
-  stages {
-    stage('Build') {
-      steps {
-        sh '''pwd
-date'''
-      }
+pipeline{
+    agent any
+    tools {
+        maven 'Maven' 
     }
-
-    stage('Test') {
-      parallel {
-        stage('Test') {
-          steps {
-            echo 'test-step'
-          }
+    stages{
+        stage("Test"){
+            steps{
+                // mvn test
+                sh "mvn --version"
+                echo "========executing A========"
+            }
         }
-
-        stage('test-parallel') {
-          steps {
-            echo 'test-is-paraelly-running'
-          }
+        stage("Build"){
+            steps{
+                sh "mvn package"
+                echo "========executing A========"
+            }
         }
-
-      }
+        stage("Deploy on Test"){
+            steps{
+               deploy adapters: [tomcat9(credentialsId: 'vishnuuuuuuu', path: '', url: 'http://3.88.194.126:8080/')], contextPath: '/app', war: '**/*.war'
+                echo "========executing A========"
+            }
+        }
+        stage("Deploy on Prod"){
+            steps{
+               deploy adapters: [tomcat9(credentialsId: 'vishnuuuuuuu', path: '', url: 'http://http://18.212.18.97:8080/')], contextPath: '/app', war: '**/*.war'
+                echo "========executing A========"
+            }
+        }
     }
-
-    stage('Deploy') {
-      steps {
-        echo 'Build has been deployed'
-      }
+    post{
+        always{
+            echo "========always========"
+        }
+        success{
+            echo "========pipeline executed successfully ========"
+        }
+        failure{
+            echo "========pipeline execution failed========"
+        }
     }
-
-  }
 }
